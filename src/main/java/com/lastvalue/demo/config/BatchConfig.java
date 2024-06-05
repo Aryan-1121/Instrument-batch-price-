@@ -58,17 +58,44 @@ public class BatchConfig {
     }
 
 
+
+
+    @Bean
+    public Step startBatchStep(StartBatchTasklet startBatchTasklet, JobRepository jobRepository,  PlatformTransactionManager transactionManager) {
+        System.out.println("in startBatchstep bean ");
+        return new StepBuilder("startBatchStep", jobRepository)
+                .tasklet(startBatchTasklet, transactionManager)
+                .build();
+    }
+
+    @Bean
+    public Step processPriceStep(ItemReader<PriceRecord> reader, ItemProcessor<PriceRecord, PriceRecord> processor,
+                                 ItemWriter<PriceRecord> writer, JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+        return new StepBuilder("processPriceStep", jobRepository)
+                .<PriceRecord, PriceRecord>chunk(1000, transactionManager)
+                .reader(reader)
+                .processor(processor)
+                .writer(writer)
+                .taskExecutor(taskExecutor())
+                .build();
+    }
+
+    @Bean
+    public Step completeBatchStep(CompleteBatchTasklet completeBatchTasklet, PlatformTransactionManager transactionManager) {
+        return new StepBuilder("completeBatchStep", jobRepository)
+                .tasklet(completeBatchTasklet, transactionManager)
+                .build();
+    }
+
+
+
+
+
+
     @Bean
     public TaskExecutor taskExecutor() {
         return new SimpleAsyncTaskExecutor("spring_batch");
     }
-
-//
-//    @Bean
-//    public PlatformTransactionManager transactionManager() {
-//        return new JpaTransactionManager();
-//    }
-//
 
 
 
@@ -105,29 +132,4 @@ public class BatchConfig {
 
 
 
-    @Bean
-    public Step startBatchStep(StartBatchTasklet startBatchTasklet, JobRepository jobRepository,  PlatformTransactionManager transactionManager) {
-        return new StepBuilder("startBatchStep", jobRepository)
-                .tasklet(startBatchTasklet, transactionManager)
-                .build();
-    }
-
-    @Bean
-    public Step processPriceStep(ItemReader<PriceRecord> reader, ItemProcessor<PriceRecord, PriceRecord> processor,
-                                 ItemWriter<PriceRecord> writer, JobRepository jobRepository, PlatformTransactionManager transactionManager) {
-        return new StepBuilder("processPriceStep", jobRepository)
-                .<PriceRecord, PriceRecord>chunk(1000, transactionManager)
-                .reader(reader)
-                .processor(processor)
-                .writer(writer)
-                .taskExecutor(taskExecutor())
-                .build();
-    }
-
-    @Bean
-    public Step completeBatchStep(CompleteBatchTasklet completeBatchTasklet, PlatformTransactionManager transactionManager) {
-        return new StepBuilder("completeBatchStep", jobRepository)
-                .tasklet(completeBatchTasklet, transactionManager)
-                .build();
-    }
 }

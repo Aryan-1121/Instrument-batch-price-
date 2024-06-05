@@ -9,8 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class PriceServiceImpl implements PriceService {
     private final Map<String, PriceRecord> priceStore = new ConcurrentHashMap<>();
-    private List<PriceRecord> currentBatch;
-    private boolean batchInProgress = false;
+    private List<PriceRecord> currentBatch= new ArrayList<>();
+    private boolean batchInProgress;
 
     @Override
     public synchronized void startBatchRun() {
@@ -24,7 +24,6 @@ public class PriceServiceImpl implements PriceService {
 
     @Override
     public void uploadRecords(List<PriceRecord> records) {
-        batchInProgress = true;
         System.out.println("batch status : " + batchInProgress);
         if (!batchInProgress) {
             throw new IllegalStateException("No batch run in progress");
@@ -42,6 +41,7 @@ public class PriceServiceImpl implements PriceService {
             throw new IllegalStateException("No batch run in progress");
         }
         for (PriceRecord record : currentBatch) {
+            System.out.println(record);
             PriceRecord existingRecord = priceStore.get(record.getId());
             if (existingRecord == null || existingRecord.getAsOf().isBefore(record.getAsOf())) {
                 priceStore.put(record.getId(), record);
