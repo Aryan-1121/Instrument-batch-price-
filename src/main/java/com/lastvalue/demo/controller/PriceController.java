@@ -26,20 +26,29 @@ public class PriceController {
     @PostMapping("/start")
     public void startBatch() {
         try {
+            System.out.println("controller : /start ");
             jobLauncher.run(priceJob, new JobParametersBuilder().addLong("startAt", System.currentTimeMillis()).toJobParameters());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+
     @PostMapping("/upload")
     public void uploadRecords(@RequestBody List<PriceRecord> records) {
+        System.out.println("in controller : upload");
+//        System.out.println(records);
+            for(PriceRecord record : records){
+                System.out.println(record);
+            }
+
         priceService.uploadRecords(records);
     }
 
     @PostMapping("/complete")
     public void completeBatch() {
         try {
+            System.out.println("in controller : /complete");
             jobLauncher.run(priceJob, new JobParametersBuilder().addLong("completeAt", System.currentTimeMillis()).toJobParameters());
         } catch (Exception e) {
             throw new RuntimeException(e);
